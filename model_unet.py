@@ -5,7 +5,7 @@ class UnetGenerator(nn.Module):
 
     def __init__(self, in_dim, out_dim, num_filter):
         super(UnetGenerator, self).__init__()
-        self.in_dim = in_dim
+        self.in_dim = 4
         self.out_dim = out_dim
         self.num_filter = num_filter
         act_fn = nn.LeakyReLU(0.2, inplace=True)
