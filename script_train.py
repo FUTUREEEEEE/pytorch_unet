@@ -21,8 +21,8 @@ epochs = 100
 
 
 # cityscapes dataset loading
-img_data = CityscapesDataset(args.datadir, split='train', mode='fine', augment=True)
-img_batch = torch.utils.data.DataLoader(img_data, batch_size=args.batch_size, shuffle=True, num_workers=4)
+img_data = CityscapesDataset(args.datadir, split='train', mode='fine', augment=False)
+img_batch = torch.utils.data.DataLoader(img_data, batch_size=args.batch_size, shuffle=False, num_workers=4)
 print(img_data)
 
 
