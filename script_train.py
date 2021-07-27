@@ -95,8 +95,8 @@ for epoch in range(epochs):
             print("epoch = "+str(epoch)+" | loss = "+str(loss.item()))
 
             # save the original image and label batches to file
-            v_utils.save_image(x.cpu().data, "./result/original_image_{}_{}.png".format(epoch, idx_batch))
-            v_utils.save_image(labelrgb, "./result/label_image_{}_{}.png".format(epoch, idx_batch))
+            #v_utils.save_image(x.cpu().data, "./result/original_image_{}_{}.png".format(epoch, idx_batch))
+            #v_utils.save_image(labelrgb, "./result/label_image_{}_{}.png".format(epoch, idx_batch))
 
             # max over the classes should be the prediction
             # our prediction is [N, classes, W, H]
