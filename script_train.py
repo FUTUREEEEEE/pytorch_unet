@@ -5,6 +5,50 @@ import matplotlib.pyplot as plt
 from model_unet import *
 from datasets import CityscapesDataset
 
+import os 
+import time
+import torch
+from S2R import DSAModules
+import numpy as np
+from S2R.utils import *
+import torch.nn as nn
+from S2R.models import modules
+import torchvision.utils as vutils
+import torch.backends.cudnn as cudnn
+from PIL import Image
+import torchvision
+import matplotlib.pyplot as plt
+from matplotlib.image import imsave
+
+#####
+#load Shared_Struct_Encoder
+Shared_Struct_Encoder = modules.Struct_Encoder(n_downsample=2, n_res=4, 
+											input_dim=3, dim=64, 
+											norm='in', activ='lrelu', 
+											pad_type='reflect')
+Shared_Struct_Encoder = Shared_Struct_Encoder.cuda()	
+Shared_Struct_Encoder.load_state_dict(torch.load("/content/drive/MyDrive/S2Rnet/struct_encoder_vkitti.pth"))
+#for name,p in Shared_Struct_Encoder.named_parameters():
+#  print(name,p)
+Shared_Struct_Encoder.eval()
+
+#load decoder
+Struct_Decoder = modules.Struct_Decoder()
+Struct_Decoder = torch.nn.DataParallel(Struct_Decoder).cuda()
+Struct_Decoder.load_state_dict(torch.load("/content/drive/MyDrive/S2Rnet/struct_decoder_vkitti.pth"))
+Struct_Decoder.eval()
+
+#load attention module
+Attention_Model = DSAModules.drn_d_22(pretrained=True)
+DSAModle = DSAModules.AutoED(Attention_Model)
+DSAModle = torch.nn.DataParallel(DSAModle).cuda()
+DSAModle.load_state_dict(torch.load("/content/drive/MyDrive/S2Rnet/dsamodels_vkitti.pth"))
+DSAModle.eval()
+
+#process 
+
+
+########
 
 # our CLI parser
 parser = argparse.ArgumentParser()
@@ -21,8 +65,8 @@ epochs = 100
 
 
 # cityscapes dataset loading
-img_data = CityscapesDataset(args.datadir, split='train', mode='fine', augment=True)
-img_batch = torch.utils.data.DataLoader(img_data, batch_size=args.batch_size, shuffle=True, num_workers=4)
+img_data = CityscapesDataset(args.datadir, split='train', mode='fine', augment=False)
+img_batch = torch.utils.data.DataLoader(img_data, batch_size=args.batch_size, shuffle=False, num_workers=4)
 print(img_data)
 
 
@@ -72,6 +116,19 @@ for epoch in range(epochs):
 
         # send to the GPU and do a forward pass
         x = Variable(imagergb).cuda(0)
+        with torch.no_grad():
+
+          struct_code = Shared_Struct_Encoder(x)
+          struct_code = Struct_Decoder(struct_code)
+
+          attention_map = DSAModle(x)
+          attention_map = attention_map * struct_code
+
+          x=torch.cat((x,attention_map),1)
+          
+          del struct_code,attention_map
+
+        #print("\n imagergb: ",imagergb.shape,"\n")
         y_ = Variable(labelmask).cuda(0)
         y = generator.forward(x)
 
