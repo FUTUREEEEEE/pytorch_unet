@@ -206,9 +206,10 @@ class CityscapesDataset(Dataset):
             #    image = TF.vflip(image)
             #    target = TF.vflip(target)
         else:
+            
             # Resize
-            image = TF.resize(image, size=(128, 256), interpolation=Image.BILINEAR)
-            target = TF.resize(target, size=(128, 256), interpolation=Image.NEAREST)
+            image = TF.resize(image, size=(512, 1024), interpolation=Image.BILINEAR)
+            target = TF.resize(target, size=(512, 1024), interpolation=Image.NEAREST)
 
         # convert to pytorch tensors
         # target = TF.to_tensor(target)
